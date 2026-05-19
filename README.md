@@ -22,7 +22,7 @@ A 5-day hands-on course covering the core R toolkit for data wrangling, visualiz
 - Variables and data types
 - R Markdown as a notebook for code and notes (without deep diving in customization)
 
-**Practical:** Create scripts and run basic math operations and variable assignments.
+**Practical:** Create scripts and run basic math operations and variable assignments
 
 ---
 
@@ -32,7 +32,7 @@ A 5-day hands-on course covering the core R toolkit for data wrangling, visualiz
 - Introduction to data frames and tibbles
 - Core `dplyr`: `filter`, `select`, `mutate`, `arrange`
 
-**Practical:** Data wrangling exercises with `dplyr`.
+**Practical:** Data wrangling exercises with `dplyr`
 
 ---
 
@@ -42,7 +42,7 @@ A 5-day hands-on course covering the core R toolkit for data wrangling, visualiz
 - Common plot types: scatter plots, boxplots, histograms
 - Customising plots: labels, themes, etc.
 
-**Practical:** Produce a plot from a provided dataset.
+**Practical:** Produce a plot from a provided dataset
 
 ---
 
@@ -52,7 +52,7 @@ A 5-day hands-on course covering the core R toolkit for data wrangling, visualiz
 - Control flow: `for` and `while` loops
 - Writing reusable functions
 
-**Practical:** Write a function that accepts a data frame, performs a computation, and returns a `ggplot` graph.
+**Practical:** Write a function that accepts a data frame, performs a computation, and returns a `ggplot` graph
 
 ---
 
