@@ -2,7 +2,8 @@
 
 A 5-day hands-on course covering the core R toolkit for data wrangling, visualization, statistics, and reproducible reporting.
 
-Course material: https://carpentries-incubator.github.io/bioc-intro/
+- Course material: https://carpentries-incubator.github.io/bioc-intro/
+- 4 hours/day (2 pm - 6 pm) with 2x 10 min breaks
 
 ---
 
