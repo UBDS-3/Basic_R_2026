@@ -1,6 +1,7 @@
 # UBDS3 — Introduction to R (2026)
 
-A 5-day hands-on course covering the core R toolkit for data wrangling, visualization, statistics, and reproducible reporting.
+A 5-day hands-on course covering the core R toolkit for data
+wrangling, visualization, statistics, and reproducible reporting.
 
 - Course material: https://carpentries-incubator.github.io/bioc-intro/
 - Local copy: [course material](material/index.html) and [data](data)
@@ -51,7 +52,8 @@ A 5-day hands-on course covering the core R toolkit for data wrangling, visualiz
 
 ## Day 5 — Mini-Project
 
-- Mini-project: students will be able to choose from a set of projects and prepare reproducible reports.
+- Mini-project: students will be able to choose from a set of projects
+  and prepare reproducible reports.
 
 **Mini-project:**
 
