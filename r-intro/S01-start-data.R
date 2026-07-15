@@ -54,7 +54,16 @@ head(rna)
 rna[-(7:nrow(rna)), ]
 
 
+## Factors
 
+sex <- c("M", "M", "F", "M", "F")
 
+sex
+
+sex <- factor(sex)
+
+sex
+
+factor(c("M", "M", "F", "M", "F", NA))
 
 

@@ -52,3 +52,191 @@ filter(rna, sex == "Female",
 View(filter(rna, sex == "Female",
        infection != "InfluenzaA"))
 
+## Ex
+
+## Create a new tibble called rna2 containing male 
+## mice at time point 0, (that do not have a missing 
+## homolog in humans), and only columns gene, expression, 
+## chromosome and time.
+
+
+rna2 <- filter(rna, sex == "Male",
+               time == 0,
+               !is.na(hsapiens_homolog_associated_gene_name))
+
+rna2 <- select(rna2, gene, expression,  chromosome_name, time)
+
+# rna2 <- select(
+#   filter(rna, sex == "Male",
+#          time == 0,
+#          !is.na(hsapiens_homolog_associated_gene_name)),
+#   gene, expression,  chromosome_name, time)
+       
+## Pipes: |>  %>%
+  
+rna3 <- rna |> 
+  filter(sex == "Male", 
+         time == 0,
+         !is.na(
+           hsapiens_homolog_associated_gene_name)) |> 
+  select(gene, expression,  
+         chromosome_name, time)
+
+identical(rna2, rna3)
+
+# Ex:
+
+# Using pipes, subset the rna data to keep 
+# observations in female mice at time 0, where 
+# the gene has an expression higher than 50000, 
+# and retain only the columns gene, sample, 
+# time, expression and age.
+
+rna |> 
+  filter(sex == "Female",
+         time == 0,
+         expression > 50000) |> 
+  select(gene, sample, time, 
+         expression, age)
+  
+
+## Mutate
+
+rna |> 
+  mutate(time_hours = time * 24) |> 
+  select(gene, time, time_hours)
+  
+  
+rna |> 
+  mutate(time = time * 24) |> 
+  select(gene, time)
+
+rna |> 
+  mutate(time_hours = time * 24,
+         time_min = time_hours * 60) |> 
+  select(gene, time, time_hours,
+         time_min)
+
+  
+# Create a new data frame from the rna
+# data that meets the following 
+# criteria: contains only the gene, 
+# chromosome_name, phenotype_description, 
+# sample, and expression columns. The 
+# expression values should be 
+# log-transformed. This data frame must 
+# only contain genes located on sex 
+# chromosomes, associated with a 
+# phenotype_description, and with a 
+# log expression higher than 5.
+# 
+# Hint: think about how the commands 
+# should be ordered to produce this data
+# frame!
+
+## table(rna$chromosome_name %in% c("X", "Y"))
+
+rna |> 
+  mutate(expression = log(expression)) |> 
+  filter(expression > 5,
+         chromosome_name %in% c("X", "Y"),
+         !is.na(phenotype_description)) |> 
+  select(gene, chromosome_name, 
+         phenotype_description, 
+         sample, expression)
+
+## Split-apply-combine
+
+rna |> 
+  group_by(sex)
+
+rna |> 
+  group_by(gene)
+
+rna |> 
+  group_by(gene, sex)
+
+
+rna |> 
+  group_by(gene) |> 
+  summarise(mean = mean(expression))
+
+
+rna |> 
+  group_by(gene, sex, time) |> 
+  summarise(mean = mean(expression))
+
+rna |> 
+  group_by(gene, sex, time) |> 
+  summarise(mean = mean(expression)) |> 
+  ungroup()
+
+rna |> 
+  group_by(time, gene, sex) |> 
+  summarise(mean = mean(expression))
+
+
+rna |> 
+  filter(sex == "Female", 
+         time == 0,
+         gene == "AI504432") |> 
+  select(gene, time, sex, expression) |> 
+  pull(expression) |> 
+  mean()
+
+
+rna |> 
+  group_by(time, gene, sex) |> 
+  summarise(mean = mean(expression), 
+            med = median(expression))
+
+## Ex
+## Calculate the mean expression level of 
+## gene “Dok3” by timepoints.
+
+rna |> 
+  filter(gene == "Dok3") |> 
+  group_by(time) |> 
+  summarise(mean_exp = mean(expression))
+
+rna |> 
+  group_by(time, gene) |> 
+  summarise(mean_exp = mean(expression)) |> 
+  filter(gene == "Dok3")
+
+
+rna |> 
+  count(infection)
+
+
+rna |> 
+  group_by(infection) |> 
+  summarise(n = n())
+
+
+rna |> 
+  count(infection, time)
+
+rna |> 
+  count(infection, time) |> 
+  arrange(time)
+
+rna |> 
+  count(infection, time) |> 
+  arrange(desc(time))
+
+
+# 1. How many genes were analysed in each sample?
+# 2. Use group_by() and summarise() to 
+#    evaluate the sequencing depth 
+#    (the sum of all counts) in each sample. 
+#    Which sample has the highest sequencing 
+#    depth?
+# 3. Pick one sample and evaluate the number 
+#    of genes by biotype.
+# 4. Identify genes associated with the 
+#    “abnormal DNA methylation” phenotype 
+#    description, and calculate their mean 
+#    expression (in log) at time 0, time 4 and 
+#    time 8.
+
