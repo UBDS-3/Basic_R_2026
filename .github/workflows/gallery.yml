@@ -18,53 +18,69 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generate index.html
+      - name: Build gallery from maps/*.html
         run: |
           python3 - <<'EOF'
-          import os, re
+          import os, re, shutil, html as H
 
-          slugs = sorted(f[:-5] for f in os.listdir("maps") if f.endswith(".html"))
+          MAPS, OUT = "maps", "_site"
+          os.makedirs(os.path.join(OUT, "maps"), exist_ok=True)
 
-          def title(slug):
-              return re.sub(r"^\d+-", "", slug).replace("-", " ").replace("_", " ").title()
+          def field(pat, doc, default=""):
+              m = re.search(pat, doc, re.I | re.S)
+              return H.unescape(m.group(1).strip()) if m else default
 
-          cards = "\n".join(
-              f'<a class="card" href="maps/{s}.html" target="_blank">'
-              f'<div><iframe src="maps/{s}.html" loading="lazy" tabindex="-1"></iframe></div>'
-              f'<p>{title(s)}</p></a>'
-              for s in slugs
-          )
+          cards = []
+          for f in sorted(x for x in os.listdir(MAPS) if x.endswith(".html")):
+              slug = f[:-5]
+              doc = open(os.path.join(MAPS, f), encoding="utf-8").read()
 
-          html = f"""<!DOCTYPE html>
+              title  = field(r"<title>(.*?)</title>", doc, slug)
+              author = field(r'<meta\s+name="author"\s+content="(.*?)"', doc)
+              img    = field(r'<img[^>]+src="(data:image/[^"]+)"', doc)
+
+              thumb = (f'<img src="{img}" alt="{H.escape(title)}">' if img
+                       else '<div class="noimg">🗺️</div>')
+              meta = f'<p class="title">{H.escape(title)}</p>'
+              if author:
+                  meta += f'<p class="author">{H.escape(author)}</p>'
+
+              cards.append(
+                  f'<a class="card" href="maps/{slug}.html" target="_blank">'
+                  f'{thumb}<div class="meta">{meta}</div></a>'
+              )
+              shutil.copy(os.path.join(MAPS, f), os.path.join(OUT, "maps", f))
+
+          page = """<!DOCTYPE html>
           <html lang="en">
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width,initial-scale=1">
             <title>Maps Gallery</title>
             <style>
-              *{{box-sizing:border-box;margin:0;padding:0}}
-              body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8}}
-              header{{background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff;padding:2.5rem 2rem;text-align:center}}
-              header h1{{font-size:2rem;font-weight:700}}
-              .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem}}
-              .card{{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);text-decoration:none;color:#1a365d;transition:transform .18s,box-shadow .18s}}
-              .card:hover{{transform:translateY(-4px);box-shadow:0 10px 28px rgba(0,0,0,.14)}}
-              .card div{{height:200px;overflow:hidden}}
-              .card iframe{{width:200%;height:200%;border:none;pointer-events:none;transform:scale(.5);transform-origin:0 0;display:block}}
-              .card p{{padding:.8rem 1rem;font-weight:600;font-size:.95rem}}
+              *{box-sizing:border-box;margin:0;padding:0}
+              body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8}
+              header{background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff;padding:2.5rem 2rem;text-align:center}
+              header h1{font-size:2rem;font-weight:700}
+              .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem}
+              .card{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);text-decoration:none;color:#1a365d;transition:transform .18s,box-shadow .18s}
+              .card:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(0,0,0,.14)}
+              .card img{width:100%;height:210px;object-fit:contain;background:#fff;padding:10px;display:block}
+              .card .noimg{height:210px;display:flex;align-items:center;justify-content:center;font-size:4rem;background:#e8f0fe}
+              .meta{padding:.85rem 1rem;border-top:1px solid #edf2f7}
+              .title{font-weight:600;font-size:1rem}
+              .author{font-size:.82rem;color:#718096;margin-top:.2rem}
             </style>
           </head>
           <body>
           <header><h1>🗺️ Maps Gallery</h1></header>
-          <div class="grid">{cards}</div>
+          <div class="grid">__CARDS__</div>
           </body></html>"""
 
-          os.makedirs("_site/maps", exist_ok=True)
-          with open("_site/index.html", "w") as f:
-              f.write(html)
-          print(f"Built index.html — {len(slugs)} map(s)")
+          open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(
+              page.replace("__CARDS__", "\n".join(cards)))
+          print(f"Built gallery — {len(cards)} map(s)")
           EOF
-          cp maps/*.html _site/maps/
 
       - uses: actions/upload-pages-artifact@v3
         with:
