@@ -1,13 +1,17 @@
 ---
 title: "Map of Ukraine"
+author: "Alexey Stroganov"
 format:
   html:
     self-contained: true
+    page-layout: full
+execute:
+  echo: false
+  message: false
+  warning: false
 ---
 
 ```{r}
-#| message: false
-#| warning: false
 library(tidyverse)
 library(maps)
 
