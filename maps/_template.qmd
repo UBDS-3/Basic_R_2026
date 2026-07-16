@@ -1,0 +1,27 @@
+---
+title: "Map Title Here"
+description: "One-sentence description shown on the gallery card."
+categories:
+  - ggplot2      # library used (ggplot2 / leaflet / tmap / sf / etc.)
+  - static       # static or interactive
+  - world        # geographic scope (world / europe / usa / city / etc.)
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+# add other packages here
+```
+
+## About this map
+
+Brief explanation of what this map shows and why it is interesting.
+
+```{r}
+#| label: map
+#| fig-width: 10
+#| fig-height: 6
+
+# Your map code here.
+```
