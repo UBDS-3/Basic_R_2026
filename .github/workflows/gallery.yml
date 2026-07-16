@@ -1,0 +1,32 @@
+name: Update Gallery Manifest
+
+on:
+  push:
+    branches: [students]
+    paths:
+      - "maps/*.html"
+
+permissions:
+  contents: write
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Regenerate maps/manifest.json
+        run: |
+          ls maps/*.html 2>/dev/null \
+            | sed 's|maps/||; s|\.html||' \
+            | sort \
+            | python3 -c "import sys,json; print(json.dumps(sys.stdin.read().split()))" \
+            > maps/manifest.json
+
+      - name: Commit manifest
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add maps/manifest.json
+          git diff --staged --quiet || git commit -m "chore: update gallery manifest"
+          git push

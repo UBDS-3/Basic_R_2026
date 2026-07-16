@@ -1,27 +1,17 @@
 ---
 title: "Map of Ukraine"
-description: "Ukraine map with Uzhhorod highlighted — host city of the Ukrainian Biological Data Science Summer School 2026."
-categories:
-  - ggplot2
-  - maps
-  - static
-  - ukraine
+format:
+  html:
+    self-contained: true
 ---
 
 ```{r}
-#| label: setup
-#| include: false
+#| message: false
+#| warning: false
 library(tidyverse)
 library(maps)
-```
-
-```{r}
-#| label: map
-#| fig-width: 9
-#| fig-height: 5
 
 ukraine <- map_data("world", region = "Ukraine")
-
 uzhhorod <- data.frame(city = "Uzhhorod", lon = 22.2879, lat = 48.6208)
 
 ggplot(ukraine, aes(x = long, y = lat, group = group)) +

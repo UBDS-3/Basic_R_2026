@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maps Gallery</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+           background: #f0f4f8; min-height: 100vh; }
+
+    header { background: linear-gradient(135deg, #1a365d, #2b6cb0); color: #fff;
+             padding: 3rem 2rem; text-align: center; }
+    header h1 { font-size: 2.2rem; font-weight: 700; }
+    header p  { margin-top: .5rem; opacity: .82; }
+
+    .grid { display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem; max-width: 1200px; margin: 2.5rem auto; padding: 0 1.5rem; }
+
+    .card { background: #fff; border-radius: 10px; overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+            transition: transform .18s, box-shadow .18s; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,.14); }
+
+    .thumb { position: relative; height: 200px; overflow: hidden; background: #e8f0fe; }
+    .thumb iframe { width: 200%; height: 200%; border: none; pointer-events: none;
+                    transform: scale(.5); transform-origin: 0 0; }
+    .thumb-overlay { position: absolute; inset: 0; cursor: pointer; }
+
+    .card-foot { display: flex; align-items: center; justify-content: space-between;
+                 padding: .8rem 1rem; }
+    .card-title { font-weight: 600; font-size: .95rem; color: #1a365d; }
+    .btn-code { background: #ebf4ff; border: none; color: #2b6cb0; font-size: .8rem;
+                font-weight: 600; padding: .35rem .75rem; border-radius: 6px;
+                cursor: pointer; transition: background .15s; }
+    .btn-code:hover { background: #bee3f8; }
+
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65);
+               z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+    .overlay.open { display: flex; }
+    .modal { background: #1e1e2e; border-radius: 12px; width: 100%; max-width: 820px;
+             max-height: 88vh; display: flex; flex-direction: column; overflow: hidden;
+             box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+    .modal-head { background: #2a2a3e; color: #e2e8f0; padding: .85rem 1.25rem;
+                  display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .modal-head span { font-size: .9rem; font-weight: 600; }
+    .close { background: none; border: none; color: #a0aec0; font-size: 1.5rem;
+             cursor: pointer; line-height: 1; }
+    .close:hover { color: #fff; }
+    .modal-body { overflow-y: auto; padding: 1.25rem 1.4rem; }
+    pre { font-family: 'Fira Code', 'Consolas', monospace; font-size: .83rem;
+          line-height: 1.65; color: #cdd6f4; white-space: pre-wrap; word-break: break-word; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🗺️ Maps Gallery</h1>
+  <p>Click a map to open it · <em>Code</em> to see the source</p>
+</header>
+
+<div class="grid" id="grid"></div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <span id="modal-title">Source</span>
+      <button class="close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body"><pre id="modal-code">Loading…</pre></div>
+  </div>
+</div>
+
+<script>
+  function slugToTitle(slug) {
+    return slug.replace(/^\d+-/, "").replace(/[-_]/g, " ")
+               .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function showCode(slug, title, event) {
+    event.stopPropagation();
+    document.getElementById("modal-title").textContent = title + " — source";
+    document.getElementById("modal-code").textContent = "Loading…";
+    document.getElementById("overlay").classList.add("open");
+    fetch("maps/" + slug + ".qmd")
+      .then(r => r.ok ? r.text() : Promise.reject())
+      .then(t => document.getElementById("modal-code").textContent = t)
+      .catch(() => document.getElementById("modal-code").textContent = "# source not found");
+  }
+
+  function closeModal() { document.getElementById("overlay").classList.remove("open"); }
+  document.getElementById("overlay").addEventListener("click", e => {
+    if (e.target === document.getElementById("overlay")) closeModal();
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+  fetch("maps/manifest.json")
+    .then(r => r.json())
+    .then(slugs => {
+      const grid = document.getElementById("grid");
+      slugs.forEach(slug => {
+        const title = slugToTitle(slug);
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="thumb">
+            <iframe src="maps/${slug}.html" title="${title}" loading="lazy"></iframe>
+            <div class="thumb-overlay" onclick="window.open('maps/${slug}.html')"></div>
+          </div>
+          <div class="card-foot">
+            <span class="card-title">${title}</span>
+            <button class="btn-code" onclick="showCode('${slug}','${title}',event)">&#x1F4C4; Code</button>
+          </div>`;
+        grid.appendChild(card);
+      });
+    })
+    .catch(() => {
+      document.getElementById("grid").innerHTML =
+        "<p style='padding:2rem;color:#718096'>No maps yet.</p>";
+    });
+</script>
+
+</body>
+</html>
