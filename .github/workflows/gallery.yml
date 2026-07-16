@@ -5,11 +5,16 @@ on:
     branches: [students]
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -18,17 +23,14 @@ jobs:
           python3 - <<'EOF'
           import os, re
 
-          slugs = sorted(
-              f[:-5] for f in os.listdir("maps")
-              if f.endswith(".html")
-          )
+          slugs = sorted(f[:-5] for f in os.listdir("maps") if f.endswith(".html"))
 
           def title(slug):
               return re.sub(r"^\d+-", "", slug).replace("-", " ").replace("_", " ").title()
 
           cards = "\n".join(
               f'<a class="card" href="maps/{s}.html" target="_blank">'
-              f'<iframe src="maps/{s}.html" loading="lazy" tabindex="-1"></iframe>'
+              f'<div><iframe src="maps/{s}.html" loading="lazy" tabindex="-1"></iframe></div>'
               f'<p>{title(s)}</p></a>'
               for s in slugs
           )
@@ -47,8 +49,8 @@ jobs:
               .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem}}
               .card{{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);text-decoration:none;color:#1a365d;transition:transform .18s,box-shadow .18s}}
               .card:hover{{transform:translateY(-4px);box-shadow:0 10px 28px rgba(0,0,0,.14)}}
+              .card div{{height:200px;overflow:hidden}}
               .card iframe{{width:200%;height:200%;border:none;pointer-events:none;transform:scale(.5);transform-origin:0 0;display:block}}
-              .card>div{{height:200px;overflow:hidden}}
               .card p{{padding:.8rem 1rem;font-weight:600;font-size:.95rem}}
             </style>
           </head>
@@ -57,15 +59,16 @@ jobs:
           <div class="grid">{cards}</div>
           </body></html>"""
 
-          with open("index.html", "w") as f:
+          os.makedirs("_site/maps", exist_ok=True)
+          with open("_site/index.html", "w") as f:
               f.write(html)
           print(f"Built index.html — {len(slugs)} map(s)")
           EOF
+          cp maps/*.html _site/maps/
 
-      - name: Commit index.html
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git diff --staged --quiet || git commit -m "chore: rebuild gallery"
-          git push
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - uses: actions/deploy-pages@v4
+        id: deployment
