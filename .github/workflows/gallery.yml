@@ -46,7 +46,7 @@ jobs:
                   meta += f'<p class="author">{H.escape(author)}</p>'
 
               cards.append(
-                  f'<a class="card" href="maps/{slug}.html" target="_blank">'
+                  f'<a class="card" href="maps/{slug}.html">'
                   f'{thumb}<div class="meta">{meta}</div></a>'
               )
               shutil.copy(os.path.join(MAPS, f), os.path.join(OUT, "maps", f))
