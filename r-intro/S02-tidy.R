@@ -325,12 +325,38 @@ rna_time <- rna_time |>
 ## and 0, and time 4 and 0, by dividing
 ## the respective average expressions.
 
+rna_time |> 
+  mutate(fc4 = t4 / t0,
+         fc8 = t8 / t0)
 
 ## Convert this table into a long-format 
 ## table gathering the fold-changes
 ## calculated above.
 
+rna_fc <- rna_time |> 
+  mutate(fc4 = t4 / t0,
+         fc8 = t8 / t0) |> 
+  select(gene, fc4, fc8) |> 
+  pivot_longer(names_to = "foldchange",
+               values_to = "value",
+               -gene) 
+
+rna_time |> 
+  mutate(fc4 = t4 / t0,
+         fc8 = t8 / t0) |> 
+  pivot_longer(names_to = "foldchange",
+               values_to = "value",
+               c(fc4, fc8))
 
 
+# rna_time |> 
+#   mutate(fc4 = t4 / t0,
+#          fc8 = t8 / t0) |> 
+#   pivot_longer(names_to = "metric",
+#                values_to = "value",
+#                -gene)
 
+rna_fc
+
+write_csv(rna_fc, "data/rna_fc.csv")
 
