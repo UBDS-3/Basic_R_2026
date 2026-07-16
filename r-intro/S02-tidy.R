@@ -227,16 +227,110 @@ rna |>
 
 
 # 1. How many genes were analysed in each sample?
+
+rna |> 
+  count(sample)
+
 # 2. Use group_by() and summarise() to 
 #    evaluate the sequencing depth 
 #    (the sum of all counts) in each sample. 
 #    Which sample has the highest sequencing 
 #    depth?
+
+rna |> 
+  group_by(sample) |> 
+  summarise(seq_depth = sum(expression)) |> 
+  arrange(desc(seq_depth))
+
+rna |> 
+  group_by(sample) |> 
+  summarise(seq_depth = sum(expression)) |> 
+  filter(seq_depth == max(seq_depth))
+
+
 # 3. Pick one sample and evaluate the number 
 #    of genes by biotype.
+
+rna |> 
+  filter(sample == "GSM2545350") |> 
+  count(gene_biotype)
+
 # 4. Identify genes associated with the 
 #    “abnormal DNA methylation” phenotype 
 #    description, and calculate their mean 
 #    expression (in log) at time 0, time 4 and 
 #    time 8.
+
+rna |> 
+  filter(phenotype_description == "abnormal DNA methylation") |> 
+  group_by(gene, time) |> 
+  summarise(mean_exp = mean(log(expression)))
+
+## Reshaping data
+
+rna_exp <- rna |> 
+  select(gene, sample, expression)
+
+rna_exp
+
+
+
+rna_wide <- rna_exp |> 
+  pivot_wider(names_from = sample,
+              values_from = expression)
+
+
+rna_long <- rna_wide |> 
+  pivot_longer(names_to = "sample",
+               values_to = "expression", 
+               -gene)
+
+rna_long
+
+
+rna_wide |> 
+  pivot_longer(names_to = "sample",
+               values_to = "expression", 
+               starts_with("GSM"))
+
+
+## Ex:
+
+rna |> 
+  filter(chromosome_name %in% c("X", "Y")) |> 
+  group_by(chromosome_name, sex) |> 
+  summarise(mean = mean(expression)) |> 
+  pivot_wider(names_from = sex, 
+              values_from = mean)
+
+
+rna_time <- rna |> 
+  group_by(gene, time) |> 
+  summarise(mean = mean(expression)) |> 
+  pivot_wider(names_from = time, 
+              values_from = mean)
+
+rna_time |> 
+  mutate(t0 = `0`,
+         t4 = `4`,
+         t8 = `8`)
+
+rna_time <- rna_time |> 
+  rename("t0" = `0`,
+         "t4" = `4`,
+         "t8" = `8`)
+
+## Add 2 new columns containing 
+## fold-changes between time 8 
+## and 0, and time 4 and 0, by dividing
+## the respective average expressions.
+
+
+## Convert this table into a long-format 
+## table gathering the fold-changes
+## calculated above.
+
+
+
+
 
