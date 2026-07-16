@@ -3,8 +3,6 @@ name: Build Gallery
 on:
   push:
     branches: [students]
-    paths:
-      - "maps/*.html"
 
 permissions:
   contents: write
@@ -20,25 +18,20 @@ jobs:
           python3 - <<'EOF'
           import os, re
 
-          def title(slug):
-              slug = re.sub(r"^\d+-", "", slug)
-              return slug.replace("-", " ").replace("_", " ").title()
-
           slugs = sorted(
               f[:-5] for f in os.listdir("maps")
-              if f.endswith(".html") and f != "index.html"
+              if f.endswith(".html")
           )
 
-          cards = "\n".join(f"""
-            <div class="card">
-              <div class="thumb" onclick="window.open('maps/{s}.html')">
-                <iframe src="maps/{s}.html" loading="lazy" tabindex="-1"></iframe>
-              </div>
-              <div class="foot">
-                <span>{title(s)}</span>
-                <button onclick="showCode('{s}','{title(s)}',event)">&#x1F4C4; Code</button>
-              </div>
-            </div>""" for s in slugs)
+          def title(slug):
+              return re.sub(r"^\d+-", "", slug).replace("-", " ").replace("_", " ").title()
+
+          cards = "\n".join(
+              f'<a class="card" href="maps/{s}.html" target="_blank">'
+              f'<iframe src="maps/{s}.html" loading="lazy" tabindex="-1"></iframe>'
+              f'<p>{title(s)}</p></a>'
+              for s in slugs
+          )
 
           html = f"""<!DOCTYPE html>
           <html lang="en">
@@ -49,55 +42,24 @@ jobs:
             <style>
               *{{box-sizing:border-box;margin:0;padding:0}}
               body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8}}
-              header{{background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff;padding:3rem 2rem;text-align:center}}
-              header h1{{font-size:2.2rem;font-weight:700}}
-              header p{{margin-top:.5rem;opacity:.82}}
-              .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;max-width:1200px;margin:2.5rem auto;padding:0 1.5rem}}
-              .card{{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:transform .18s,box-shadow .18s}}
+              header{{background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff;padding:2.5rem 2rem;text-align:center}}
+              header h1{{font-size:2rem;font-weight:700}}
+              .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem}}
+              .card{{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);text-decoration:none;color:#1a365d;transition:transform .18s,box-shadow .18s}}
               .card:hover{{transform:translateY(-4px);box-shadow:0 10px 28px rgba(0,0,0,.14)}}
-              .thumb{{position:relative;height:200px;overflow:hidden;background:#e8f0fe;cursor:pointer}}
-              .thumb iframe{{width:200%;height:200%;border:none;pointer-events:none;transform:scale(.5);transform-origin:0 0}}
-              .foot{{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1rem}}
-              .foot span{{font-weight:600;font-size:.95rem;color:#1a365d}}
-              .foot button{{background:#ebf4ff;border:none;color:#2b6cb0;font-size:.8rem;font-weight:600;padding:.35rem .75rem;border-radius:6px;cursor:pointer}}
-              .foot button:hover{{background:#bee3f8}}
-              .overlay{{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;align-items:center;justify-content:center;padding:1rem}}
-              .overlay.open{{display:flex}}
-              .modal{{background:#1e1e2e;border-radius:12px;width:100%;max-width:820px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}}
-              .mhead{{background:#2a2a3e;color:#e2e8f0;padding:.85rem 1.25rem;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}}
-              .mhead span{{font-size:.9rem;font-weight:600}}
-              .mhead button{{background:none;border:none;color:#a0aec0;font-size:1.5rem;cursor:pointer;line-height:1}}
-              .mhead button:hover{{color:#fff}}
-              .mbody{{overflow-y:auto;padding:1.25rem 1.4rem}}
-              pre{{font-family:'Fira Code','Consolas',monospace;font-size:.83rem;line-height:1.65;color:#cdd6f4;white-space:pre-wrap;word-break:break-word}}
+              .card iframe{{width:200%;height:200%;border:none;pointer-events:none;transform:scale(.5);transform-origin:0 0;display:block}}
+              .card>div{{height:200px;overflow:hidden}}
+              .card p{{padding:.8rem 1rem;font-weight:600;font-size:.95rem}}
             </style>
           </head>
           <body>
-          <header><h1>🗺️ Maps Gallery</h1><p>Click a map to open it · Code to see the source</p></header>
+          <header><h1>🗺️ Maps Gallery</h1></header>
           <div class="grid">{cards}</div>
-          <div class="overlay" id="ov">
-            <div class="modal">
-              <div class="mhead"><span id="mt"></span><button onclick="cl()">×</button></div>
-              <div class="mbody"><pre id="mc">Loading…</pre></div>
-            </div>
-          </div>
-          <script>
-            function showCode(slug,title,e){{
-              e.stopPropagation();
-              document.getElementById('mt').textContent=title+' — source';
-              document.getElementById('mc').textContent='Loading…';
-              document.getElementById('ov').classList.add('open');
-              fetch('maps/'+slug+'.qmd').then(r=>r.text()).then(t=>document.getElementById('mc').textContent=t);
-            }}
-            function cl(){{document.getElementById('ov').classList.remove('open')}}
-            document.getElementById('ov').addEventListener('click',e=>{{if(e.target===document.getElementById('ov'))cl()}});
-            document.addEventListener('keydown',e=>{{if(e.key==='Escape')cl()}});
-          </script>
           </body></html>"""
 
           with open("index.html", "w") as f:
               f.write(html)
-          print(f"Built index.html with {len(slugs)} map(s)")
+          print(f"Built index.html — {len(slugs)} map(s)")
           EOF
 
       - name: Commit index.html
