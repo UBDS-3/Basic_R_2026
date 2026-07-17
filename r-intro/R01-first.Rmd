@@ -1,0 +1,54 @@
+---
+title: "My first Rmd report"
+author: "Laurent Gatto"
+date: "2026-07-17"
+output: html_document
+---
+
+```{r echo=FALSE}
+.libPaths("~/R/x86_64-pc-linux-gnu-library/Bioc3.23/")
+```
+
+
+## Loading packages
+
+Let's start by leading the packages needed for the analysis. We will need to tidyverse, that get loaded in the following code chunk.
+
+```{r packages}
+library(tidyverse)
+```
+
+## Loading data
+
+Let's load the mouse RNA sequencing data from  Blackmore *et al.* (2017), *The effect of upper-respiratory infection on transcriptomic changes in the CNS*. 
+
+
+```{r readcsv}
+rna <- read.csv("data/rnaseq.csv")
+rna
+```
+
+
+## Visualisation
+
+We love gglot2, don't we?
+
+```{r vis}
+rna |> 
+  filter(gene %in% c("Dok3", "Asl", "Pank4", 
+                      "Trim72", "Gabrr2")) |> 
+  group_by(gene, time, sex) |> 
+  summarise(meanexp = mean(expression)) |> 
+  ggplot(aes(x = time, y = meanexp, colour = sex)) +
+  geom_line() +
+  facet_wrap(~ gene)
+```
+
+## Session information
+
+```{r si}
+sessionInfo()
+```
+
+
+
