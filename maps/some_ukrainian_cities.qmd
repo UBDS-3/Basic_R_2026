@@ -1,0 +1,81 @@
+---
+title: "Some Ukrainian cities"
+author: "Olha Vlasiuk"
+format:
+  html:
+    self-contained: true
+    page-layout: full
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+
+This consolidated code chunk installs and loads the necessary packages (tidyverse, ggplot2, ggimage) and imports the geographic border data for Ukraine. It defines two separate data frames for locations: one for special cities marked with a custom heart icon (my favourite cities, you can choose yours), and another for other regional centers marked with standard points. To create the visualization, it declared a multi-layered ggplot object, stacking the base yellow map with a blue border, followed by city points, heart images, and individually tuned text labels. Specialized subsets and positioning adjustments are applied to city labels (such as nudging Chernihiv downward and Uzhhorod inward) to optimize readability and prevent text from overlapping international borders. Finally, it applies a minimal theme to remove axes and gridlines, saves the completed map as a PNG file, and renders it to the screen.
+
+
+```{r}
+install.packages("tidyverse", "ggplot2", "ggimage")
+ library(tidyverse)
+ library(ggplot2)
+ library(ggimage)
+ ukraine <- map_data("world", region = "Ukraine")
+ heart_cities <- data.frame(
+   city = c("Kyiv", "Uzhhorod", "Manevychi"),
+   lon = c(30.5234, 22.2879, 25.3159),
+   lat = c(50.4501, 48.6208, 51.1729),
+   image_path = "heart01.png"
+ )
+ 
+ regular_centers <- data.frame(
+   city = c("Lviv", "Chernihiv", "Kharkiv", "Dnipro", "Rivne"),
+   lon = c(24.0297, 31.2893, 36.2304, 35.0462, 26.2516),
+   lat = c(49.8397, 51.4982, 50.0033, 48.4647, 50.6199)
+ )
+ 
+ ukraine_plot <- ggplot(ukraine, aes(x = long, y = lat, group = group)) +
+   geom_polygon(fill = "yellow", color = "#0057B7", linewidth = 1.5) +
+   coord_quickmap() +
+   geom_point(data = regular_centers, aes(x = lon, y = lat),
+              color = "black", size = 2.5, shape = 16, inherit.aes = FALSE) +
+   geom_text(data = subset(regular_centers, !city %in% c("Chernihiv")), 
+             aes(x = lon, y = lat, label = city), 
+             vjust = 0.5, hjust = -0.15, size = 2.2, color = "black", 
+             fontface = "bold", inherit.aes = FALSE) +
+   geom_text(data = subset(regular_centers, city == "Chernihiv"), 
+             aes(x = lon, y = lat, label = city), 
+             vjust = 1.5, hjust = -0.15, size = 2.2, color = "black", 
+             fontface = "bold", inherit.aes = FALSE) +
+   geom_image(data = heart_cities, aes(x = lon, y = lat, image = image_path),
+              size = 0.05, inherit.aes = FALSE) +
+   geom_text(data = subset(heart_cities, city == "Kyiv"), 
+             aes(x = lon, y = lat, label = city), 
+             vjust = -1.4, hjust = 0.5, fontface = "bold", size = 2.2, color = "black", inherit.aes = FALSE) +
+   geom_text(data = subset(heart_cities, city == "Uzhhorod"), 
+             aes(x = lon, y = lat, label = city), 
+             vjust = 0.5, hjust = -0.25, fontface = "bold", size = 2.2, color = "black", inherit.aes = FALSE) +
+   geom_text(data = subset(heart_cities, city == "Manevychi"), 
+             aes(x = lon, y = lat, label = city), 
+             vjust = -1.2, hjust = 0.4, fontface = "bold", size = 2.2, color = "black", inherit.aes = FALSE) +
+   
+   ggtitle("Ukrainian Biological Data Science Summer School",
+           subtitle = "July 11 – 25, 2026, Olha Vlasiuk") +
+   
+   
+   theme_minimal() +
+   theme(
+     plot.title = element_text(color = "#0057B7", face = "bold", size = 13),
+     plot.subtitle = element_text(color = "black", face = "bold", size = 11),
+     axis.title = element_blank(),
+     axis.text = element_blank(),
+     axis.ticks = element_blank(),
+     panel.grid = element_blank()
+   )
+ 
+ ggsave(filename = "ukraine_complete_map.png", plot = ukraine_plot, width = 10, height = 7)
+ 
+ ukraine_plot
+```
+
+
