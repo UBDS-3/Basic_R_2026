@@ -1,0 +1,62 @@
+---
+title: "Map of Ukraine"
+author: "Anton Piatachenco"
+format:
+  html:
+    self-contained: true
+    page-layout: full
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r}
+library(tidyverse)
+library(maps)
+library(ggthemes)
+library(palmerpenguins)
+library(ggExtra)
+library(magick)
+library(cowplot)
+
+
+locations <- data.frame(
+  city = c("Uzhhorod", "Vremivka", "Moskva"),
+  lon = c(22.2879, 36.8144, 30.5000),
+  lat = c(48.6208, 47.8331, 45.1667),
+  color = c("red", "darkgreen", "black")
+)
+
+
+ukraine_map_data <- map_data("world", region = "Ukraine")
+
+map_plot <- ggplot() +
+  geom_polygon(data = ukraine_map_data, 
+               aes(x = long, y = lat, group = group), 
+               fill = "white", color = "#0057B7", linewidth = 1) +
+  coord_quickmap() +
+  
+  geom_point(data = locations, aes(x = lon, y = lat, color = city), size = 3, 
+             shape = c(19, 19, 4)) +
+  geom_text(data = locations, aes(x = lon, y = lat, label = city),
+            vjust = 1.5, fontface = "bold") +
+  scale_color_manual(values = c("Uzhhorod" = "red", "Vremivka" = "darkgreen", "Moskva" = "black")) +
+  ggtitle("Ukrainian Biological Data Science Summer School",
+          subtitle = "July 11 – 25, 2026") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+img_url <- "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKfm7ZhcUrxAu13ycI-47X3ETOT6EphjlAMEpyPiGdfA89n8bE7bughm0P&s=10"
+download.file(img_url, "meme_temp.png", mode = "wb")
+meme_img <- image_read("meme_temp.png")
+
+
+final_plot <- ggdraw(map_plot) +
+  draw_image(meme_img, x = 0.45, y = 0.55, width = 0.15, height = 0.15)
+
+final_plot
+
+# ggsave(final_plot, filename = "../figures/AntonPiatachenco.png")
+```
