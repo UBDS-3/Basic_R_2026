@@ -14,14 +14,14 @@ res |>
   summarise(min = min(oncoFC), 
             max = max(oncoFC))
 
-threshold <- 0.71
+threshold <- 0.72
 
 res |> 
-  mutate(diagnostic = oncoFC > 0.71)
+  mutate(diagnostic = oncoFC > threshold)
 
 res |> 
   ggplot(aes(x = sample, 
              y = oncoFC, 
              colour = patient)) +
   geom_point() +
-  geom_hline(yintercept = 0.72)
+  geom_hline(yintercept = threshold)
