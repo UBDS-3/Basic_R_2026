@@ -1,0 +1,74 @@
+---
+title: "Map of Ukraine (Colored)"
+author: "Sydorenko Rostyslav"
+format:
+  html:
+    self-contained: true
+    page-layout: full
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(maps)
+
+ukraine <- map_data("world", region = "Ukraine")
+
+# --- build uabb: bbox rectangle + Ukraine holes, both with subgroup ---
+xmin <- min(ukraine$long) - 1
+xmax <- max(ukraine$long) + 1
+ymin <- min(ukraine$lat)  - 1
+ymax <- max(ukraine$lat)  + 1
+
+bbox_df <- data.frame(
+  long     = c(xmin, xmax, xmax, xmin),
+  lat      = c(ymin, ymin, ymax, ymax),
+  group    = "mask",
+  subgroup = "bbox"
+)
+
+ukraine_holes <- ukraine |>
+  select(long, lat, subgroup = group) |>
+  mutate(subgroup = paste0("hole_", subgroup),
+         group    = "mask")
+
+uzhhorod <- data.frame(
+  lon = 22.2877,
+  lat = 48.6208,
+  city = "Uzhhorog"
+  )
+
+kyiv <- data.frame(
+  lon = 30.5234,
+  lat = 50.4501,
+  city = "Kyiv"
+)
+
+uabb <- bind_rows(bbox_df, ukraine_holes)
+
+# --- flag midpoint (same bbox, no new variables needed) ---
+flag_ymid <- (ymin + ymax) / 2
+
+# --- plot ---
+uaplot <- ggplot(uabb, aes(x = long, y = lat, group = group, subgroup = subgroup)) +
+  annotate("rect", xmin = xmin, xmax = xmax,
+           ymin = flag_ymid, ymax = ymax, fill = "#0057B7") +
+  annotate("rect", xmin = xmin, xmax = xmax,
+           ymin = ymin,      ymax = flag_ymid, fill = "#FFD700") +
+  geom_polygon(fill = "white") +
+  coord_quickmap() +
+  geom_point(data = uzhhorod, mapping = aes(x = lon, y = lat), colour = "red", size = 3, shape = 18, inherit.aes = FALSE) +
+  geom_text(data = uzhhorod, mapping = aes(x = lon, y = lat, label = city),  vjust = 0.3, hjust = -0.05, nudge_x = 0.2, fontface = "bold", inherit.aes = FALSE) +
+  geom_point(data = kyiv, mapping = aes(x = lon, y = lat), color = "green", size = 4, shape = 18, inherit.aes = FALSE) +
+  geom_text(data = kyiv, aes(x = lon, y = lat, label = city), vjust = 0.3, hjust = -0.05, nudge_x = 0.2, fontface = "bold", inherit.aes = FALSE) +
+  ggtitle("Ukrainian Biological Data Science Summer School & My Hometowm",
+          subtitle = "July 11 – 25, 2026") +
+  theme(plot.title    = element_text(color = "#0057B7", face = "bold", size = 13),
+        plot.subtitle = element_text(color = "black",   face = "bold", size = 11))
+
+uaplot
+```
