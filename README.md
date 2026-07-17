@@ -63,6 +63,10 @@ wrangling, visualization, statistics, and reproducible reporting.
 4. Intepret the results and visualisations
 5. Finalise the project as a R Markdown report
 
-Question: [here](project.html)
+- Project questions: [here](project.html)
+- Data:
+  - Expression data as a [SummarizedExperiment](data/seOnco-UBDS3-2026.rds)
+  - Expression data as a [csv file](data/seOnco-UBDS3-2026.csv)
+  - Medical disparities [csv file](data/article_dat.csv)
 
 ---
