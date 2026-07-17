@@ -1,0 +1,94 @@
+---
+title: "Cute map of Ukraine"
+author: "Daria Nechepaieva"
+format:
+  html:
+    self-contained: true
+    page-layout: full
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r}
+library(ggplot2)
+library(maps)
+library(sp) 
+library(png)
+library(grid)
+
+
+img <- readPNG("kitty.png")
+img_grob <- rasterGrob(img, interpolate = TRUE)
+
+ukraine_map <- map_data("world", region = "Ukraine")
+
+cities <- data.frame(
+  city = c("Uzhhorod", "Kyiv", "Myrhorod"),
+  emoji = c("⭐", "⭐", "⭐"), 
+  lon = c(22.2879, 30.5234, 33.6083),
+  lat = c(48.6208, 50.4501, 49.9675)
+)
+
+grid_data <- expand.grid(
+  lon = seq(22.0, 40.2, by = 0.45),
+  lat = seq(44.2, 52.5, by = 0.45)
+)
+
+inside <- point.in.polygon(
+  point.x = grid_data$lon, 
+  point.y = grid_data$lat, 
+  pol.x = ukraine_map$long,  
+  pol.y = ukraine_map$lat   
+)
+
+hearts_bg <- grid_data[inside > 0, ]
+
+ggplot() +
+  geom_polygon(data = ukraine_map, aes(x = long, y = lat, group = group),
+               fill = "pink", color = "turquoise", linewidth = 1.5) +
+  coord_quickmap() +
+  
+  geom_text(data = hearts_bg, aes(x = lon, y = lat), label = "🤍",
+            color = "white", size = 3, alpha = 0.7, inherit.aes = FALSE) +
+  
+  annotation_custom(
+    grob = img_grob, 
+    xmin = 30.0, xmax = 33.0,  
+    ymin = 47.5, ymax = 49.5   
+  ) +
+  
+  geom_text(data = cities, aes(x = lon, y = lat, label = emoji),
+            size = 6, inherit.aes = FALSE) +
+  
+  geom_label(data = cities, aes(x = lon, y = lat, label = city),
+             vjust = 0.5, hjust = -0.1, nudge_x = 0.2, 
+             fontface = "bold.italic", color = "#5B3436", size = 4.5,
+             fill = "white", linewidth = NA, alpha = 0.8, 
+             inherit.aes = FALSE) +
+  
+  ggtitle("🎨 The cities that I love",
+          subtitle = "☀️ I love cool maps and cool cities") +
+  xlab("Longitude ❤️") +
+  ylab("Latitude ❤️") +
+  
+  theme_minimal() + 
+  theme(
+    plot.background = element_rect(fill = "pink", color = NA),
+    panel.background = element_rect(fill = "#AFE4E9", color = NA),
+    
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    
+    axis.title.x = element_text(color = "hotpink", face = "bold.italic", size = 12, margin = margin(t = 10)),
+    axis.title.y = element_text(color = "hotpink", face = "bold.italic", size = 12, margin = margin(r = 10)),
+    
+    plot.title = element_text(color = "purple", face = "bold", size = 16, hjust = 0.5, margin = margin(t = 15, b = 5)),
+    plot.subtitle = element_text(color = "purple", face = "bold", size = 14, hjust = 0.5, margin = margin(b = 15)),
+    plot.margin = margin(10, 10, 10, 10)
+  )
+
+```
