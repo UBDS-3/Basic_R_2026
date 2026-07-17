@@ -1,0 +1,83 @@
+---
+title: "Magnificent Ukraine. U Krymu benzynu katma"
+author: "Myron Lubiv"
+format:
+  html:
+    self-contained: true
+    page-layout: full
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r}
+#Libraries you need
+library(tidyverse)
+library(maps)
+library(ggimage)
+ 
+ # Map of Ukraine
+ ukr_map <- map_data("world", region = "Ukraine")
+ 
+ # Locations
+ gadienyv <- data.frame(city = "Gadienyv",
+                        lon = 22.2879,
+                        lat = 48.6208)
+ 
+ serber <- data.frame(city = "Serednii Bereziv",
+                      lon = 24.8092,
+                      lat = 48.4208)
+ 
+ sevastopol <- data.frame(
+   lon = 33.5269,
+   lat = 44.6044,
+   image = "C:/Users/myron/OneDrive/Documents/Rbasics2026/Basic_R_2026/Sevastopolnb.png"
+
+ )
+ 
+ kyiv <- data_frame(
+   lon= 30.5234,
+   lat = 50.4501,
+   image = "C:/Users/myron/OneDrive/Documents/Rbasics2026/Basic_R_2026/Kyivfco.png"
+ )
+ 
+ # Run the code
+ ukraine <- ggplot(ukr_map, aes(x = long, y = lat, group = group)) +
+   geom_polygon(fill = "skyblue", color = "blue", linewidth = 1) +
+   coord_quickmap() +
+   geom_point(data = gadienyv, aes(x = lon, y = lat),
+              color = "red", size = 1, inherit.aes = FALSE) +
+   geom_text(data = gadienyv, aes(x = lon, y = lat, label = city),
+             nudge_x = 0.3, fontface = "bold", inherit.aes = FALSE) +
+   geom_point(data = serber, aes(x = lon, y = lat),
+              color = "purple", size = 1, inherit.aes = FALSE) +
+   geom_text(data = serber, aes(x = lon, y = lat, label = city),
+             nudge_x = 0.3, fontface = "bold", inherit.aes = FALSE) +
+   geom_image(
+     data = sevastopol,
+     aes(x = lon, y = lat, image = image),
+     inherit.aes = FALSE,
+     size = 0.4,
+   ) +
+   
+  geom_image( data = kyiv, 
+              aes(x = lon, y = lat, image = image), 
+              inherit.aes = FALSE, 
+              size = 0.09
+              )+
+  
+   ggtitle("UBDS R basics map",
+           subtitle = "July 11–25, 2026") +
+   theme(
+     plot.title = element_text(color = "#005", face = "bold", size = 13),
+     plot.subtitle = element_text(face = "bold", size = 11)
+   )
+ 
+ ggsave("ukraine_plot.png", plot = ukraine, width = 8, height = 6, dpi = 300)
+ 
+ #Generate the picture
+ ukraine
+ 
+       
+```
